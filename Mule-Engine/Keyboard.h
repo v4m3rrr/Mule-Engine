@@ -27,12 +27,10 @@ public:
 		unsigned char key;
 	};
 public:
-	Keyboard() = default;
-
+	Keyboard() noexcept = default;
 	Keyboard(const Keyboard&) = delete;
 	Keyboard& operator=(const Keyboard&) = delete;
-
-	~Keyboard() = default;
+	~Keyboard() noexcept = default;
 public:
 	bool IsKeyPressed(unsigned int vKey)const noexcept;
 	void Flush() noexcept;

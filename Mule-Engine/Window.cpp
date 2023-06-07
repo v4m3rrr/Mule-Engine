@@ -45,7 +45,7 @@ Window::WindowClass::WindowClass() noexcept
 	RegisterClassEx(&wc);
 }
 
-Window::WindowClass::~WindowClass()
+Window::WindowClass::~WindowClass() noexcept
 {
 	UnregisterClass(wndClassName, hInstance);
 }
@@ -132,20 +132,82 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		PostQuitMessage(69);
 		return 0; //We want call DestroyWindow through our destrctor
 				 //So we skip DefWindowProc
-	case WM_SYSKEYDOWN:
-	case WM_KEYDOWN:
+	//KEYBOARD EVENTS
+	case WM_SYSKEYDOWN: case WM_KEYDOWN:
 		if (kbd.IsAutoRepeatEnabled() || !(lParam & 0x40000000))
 			kbd.OnKeyPressed(wParam);
 		break;
-	case WM_SYSKEYUP:
-	case WM_KEYUP:
+	case WM_SYSKEYUP: case WM_KEYUP:
 		kbd.OnKeyReleased(wParam);
 		break;
 	case WM_CHAR:
 		kbd.OnChar(wParam);
 		break;
+	// MOUSE EVENTS
+	case WM_MOUSEMOVE:
+	{
+		POINTS points = MAKEPOINTS(lParam);
+		mouse.OnMoved(points.x, points.y);
+		/*static std::wstringstream ss;
+		ss.str(std::wstring());
+		ss << "(" << points.x << ", " << points.y << ")";
+		SetWindowText(hWnd, ss.str().c_str());*/
+		break;
+	}
+	case WM_LBUTTONDOWN:
+	{
+		//We want track mouse movement outside
+		// of the window when LB is pressed
+		SetCapture(hWnd);
+		POINTS points = MAKEPOINTS(lParam);
+		mouse.OnPressed(points.x, points.y, Mouse::Button::Left);
+		break;
+	}
+	case WM_LBUTTONUP:
+	{
+		// Then we need to 'untrack'
+		ReleaseCapture();
+		POINTS points = MAKEPOINTS(lParam);
+		mouse.OnReleased(points.x, points.y, Mouse::Button::Left);
+		break;
+	}
+	case WM_MBUTTONDOWN:
+	{
+		POINTS points = MAKEPOINTS(lParam);
+		mouse.OnPressed(points.x, points.y, Mouse::Button::Middle);
+		break;
+	}
+	case WM_MBUTTONUP:
+	{
+		POINTS points = MAKEPOINTS(lParam);
+		mouse.OnReleased(points.x, points.y, Mouse::Button::Middle);
+		break;
+	}
+	case WM_RBUTTONDOWN:
+	{
+		POINTS points = MAKEPOINTS(lParam);
+		mouse.OnPressed(points.x, points.y, Mouse::Button::Right);
+		break;
+	}
+	case WM_RBUTTONUP:
+	{
+		POINTS points = MAKEPOINTS(lParam);
+		mouse.OnReleased(points.x, points.y, Mouse::Button::Right);
+		break;
+	}
+	case WM_MOUSEWHEEL:
+	{
+		POINTS points = MAKEPOINTS(lParam);
+		mouse.OnWheelMoved(points.x, points.y, true);
+		/*static short scrolls;
+		scrolls += GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
+		SetWindowText(hWnd, std::to_wstring(scrolls).c_str());*/
+		break;
+	}
 	case WM_KILLFOCUS:
 		kbd.ClearKeyStates();
+		mouse.ClearButtonsStates();
+		break;
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }

@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Keyboard.cpp" />
+    <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="MuleException.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WindowMessage.cpp" />
@@ -155,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="Mouse.h" />
     <ClInclude Include="MuleException.h" />
     <ClInclude Include="MuleWin.h" />
     <ClInclude Include="resource.h" />
